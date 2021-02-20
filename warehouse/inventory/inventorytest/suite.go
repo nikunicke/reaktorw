@@ -160,10 +160,39 @@ func (s *SuiteBase) TestProductsCategory(c *check.C) {
 func (s *SuiteBase) TestUpsertAvailability(c *check.C) {
 	// no products
 	original := &inventory.Availability{
+		APIID:        "55f976407e2feddb5daf",
 		Status:       "INSTOCK",
 		Manufacturer: "umpante",
-		UpdatedAt:    time.Time{},
 	}
 	err := s.inv.UpsertAvailability(original)
 	c.Assert(xerrors.Is(err, inventory.ErrAvailabilityForUnknownProduct), check.Equals, true)
+
+	product := &inventory.Product{
+		APIID:        "55f976407e2feddb5daf",
+		Name:         "A WEIRD NAME",
+		Category:     "gloves",
+		Price:        23.0,
+		Colors:       []string{"blue", "green"},
+		Manufacturer: "umpante",
+
+		RetrievedAt: time.Now().Add(-10 * time.Hour),
+	}
+	c.Assert(s.inv.UpsertProduct(product), check.IsNil)
+	c.Assert(s.inv.UpsertAvailability(original), check.IsNil)
+	c.Assert(original.ID, check.NotNil, check.Commentf("Expected ID to be set on availability item, got nil"))
+	c.Assert(original.ProductID, check.Equals, product.ID, check.Commentf(
+		"Availability assigned wrong product ID, got %s, expected %s", original.ProductID.String(), product.ID.String()))
+
+	existing := &inventory.Availability{
+		APIID:        "55f976407e2feddb5daf",
+		Status:       "OUTOFSTOCK",
+		Manufacturer: "umpante",
+	}
+	c.Assert(s.inv.UpsertAvailability(existing), check.IsNil)
+	c.Assert(existing.ID, check.Equals, original.ID, check.Commentf("Availability ID changed while updating"))
+
+	stored, err := s.inv.FindAvailability(existing.ID)
+	c.Assert(err, check.IsNil)
+	c.Assert(stored.Status, check.DeepEquals, existing.Status, check.Commentf(
+		"Availability status incorrect after update. Got %s expected %s", stored.Status, existing.Status))
 }
