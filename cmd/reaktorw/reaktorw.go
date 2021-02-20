@@ -23,6 +23,7 @@ func main() {
 	service := badapi.NewService()
 	productsService := badapi.Products(service)
 
+	// get product
 	items, err := productsService.List("gloves").Do()
 	if err != nil {
 		log.Fatal(err)
@@ -50,6 +51,14 @@ func main() {
 	for it.Next() {
 		fmt.Println(it.Product().ID.String())
 	}
+
+	// get availability
+	availabilitiesService := badapi.Availabilities(service)
+	abiplosAvailability, err := availabilitiesService.Get("abiplos").Do()
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(abiplosAvailability.StatusCode)
 
 	fmt.Println("done")
 }
