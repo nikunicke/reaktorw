@@ -29,7 +29,7 @@ func Products(s *Service) *ProductsService {
 
 // List returns a list caller that requests a page at a time
 func (s *ProductsService) List(category string) *ProductsListCall {
-	return &ProductsListCall{s: s.s, ctg: category}
+	return &ProductsListCall{s: s.s, ctg: strings.ToLower(category)}
 }
 
 // ProductsListCall represents the list caller
@@ -42,7 +42,7 @@ type ProductsListCall struct {
 
 // Do executes a list call
 func (c *ProductsListCall) Do() (*ProductsListResponse, error) {
-	urls := c.s.baseURL + "products/" + strings.ToLower(c.ctg)
+	urls := c.s.baseURL + "products/" + c.ctg
 	fmt.Println(urls)
 	req, err := http.NewRequest(http.MethodGet, urls, nil)
 	if err != nil {
@@ -57,8 +57,8 @@ func (c *ProductsListCall) Do() (*ProductsListResponse, error) {
 	}
 	ret := &ProductsListResponse{
 		ServerResponse: ServerResponse{
-			Header: res.Header,
-			Code:   res.StatusCode,
+			Header:     res.Header,
+			StatusCode: res.StatusCode,
 		},
 	}
 	ret.Products = nil

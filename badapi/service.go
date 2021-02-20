@@ -12,9 +12,10 @@ type Service struct {
 	baseURL string
 }
 
+// ServerResponse includes response data. Included in all direct responses.
 type ServerResponse struct {
-	Code   int
-	Header http.Header
+	StatusCode int
+	Header     http.Header
 }
 
 // NewService initiates a new badapi service
