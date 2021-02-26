@@ -104,12 +104,12 @@ func (s *InMemoryWarehouse) Products(fromID, toID uuid.UUID, retrievedBefore tim
 // category. Exactly one of inventory.ProductIterator or error will be non-nil.
 // Error is returned if the specified category does not include any products
 func (s *InMemoryWarehouse) ProductsCategory(ctg string) (inventory.ProductIterator, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 	products, ctgExists := s.productsCategory[strings.ToLower(ctg)]
 	if !ctgExists {
 		return nil, inventory.ErrNoDataForCategory
 	}
-	s.mu.RLock()
-	defer s.mu.RUnlock()
 	return &productIterator{s: s, products: products}, nil
 }
 
@@ -123,6 +123,7 @@ func (s *InMemoryWarehouse) UpsertAvailability(availability *inventory.Availabil
 		return inventory.ErrAvailabilityForUnknownProduct
 	}
 	availability.ProductID = product.ID
+	availability.Manufacturer = product.Manufacturer
 	if existing := s.availabilityAPIIndex[availability.APIID]; existing != nil {
 		availability.ID = existing.ID
 		availability.ProductID = existing.ProductID
