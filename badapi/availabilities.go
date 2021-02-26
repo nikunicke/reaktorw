@@ -1,20 +1,26 @@
 package badapi
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"strings"
+
+	"github.com/hashicorp/go-multierror"
+	"golang.org/x/xerrors"
 )
 
 // Availability represent a badapi availability
 type Availability struct {
-	Code     int32 `json:"code"`
-	Response []struct {
-		ID          string `json:"id"`
-		DataPayload string `json:"DATAPAYLOAD"`
-	} `json:"response"`
+	Code     int32       `json:"code"`
+	Response []*Response `json:"response"`
 
 	ServerResponse `json:"-"`
+}
+
+type Response struct {
+	ID          string `json:"id"`
+	DataPayload string `json:"DATAPAYLOAD"`
 }
 
 // AvailabilitiesService handles badapi products
@@ -47,7 +53,7 @@ func (c *AvailabilitiesGetCall) Do() (*Availability, error) {
 	if err != nil {
 		return nil, err
 	}
-	res, err := c.s.Do(req)
+	res, err := c.executeRequest(req)
 	if err != nil {
 		return nil, err
 	}
@@ -65,4 +71,38 @@ func (c *AvailabilitiesGetCall) Do() (*Availability, error) {
 		return nil, err
 	}
 	return ret, nil
+}
+
+func (c *AvailabilitiesGetCall) executeRequest(req *http.Request) (*http.Response, error) {
+	attempts := 6
+	resCh := make(chan *http.Response)
+	errCh := make(chan error)
+	ctx, cancelFn := context.WithCancel(context.Background())
+	defer cancelFn()
+
+	for i := 0; i < attempts; i++ {
+		go func(context.Context) {
+			res, err := c.s.Do(req)
+			if err != nil {
+				errCh <- err
+				return
+			}
+			select {
+			case <-ctx.Done():
+			case resCh <- res:
+			}
+		}(ctx)
+	}
+
+	var allErr error
+	for i := 0; i < attempts; i++ {
+		select {
+		case err := <-errCh:
+			allErr = multierror.Append(allErr, err)
+		case res := <-resCh:
+			cancelFn()
+			return res, nil
+		}
+	}
+	return nil, xerrors.Errorf("All attempts to request availabilities failed: %w", allErr)
 }

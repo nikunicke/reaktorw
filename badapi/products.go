@@ -2,7 +2,6 @@ package badapi
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strings"
 )
@@ -43,7 +42,6 @@ type ProductsListCall struct {
 // Do executes a list call
 func (c *ProductsListCall) Do() (*ProductsListResponse, error) {
 	urls := c.s.baseURL + "products/" + c.ctg
-	fmt.Println(urls)
 	req, err := http.NewRequest(http.MethodGet, urls, nil)
 	if err != nil {
 		return nil, err

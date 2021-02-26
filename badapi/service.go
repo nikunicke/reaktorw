@@ -2,8 +2,7 @@ package badapi
 
 import (
 	"net/http"
-
-	"golang.org/x/xerrors"
+	"time"
 )
 
 // Service represents the badapi
@@ -18,12 +17,19 @@ type ServerResponse struct {
 	Header     http.Header
 }
 
-// NewService initiates a new badapi service
+// NewService initiates a new badapi service. BaseURL default to
+// "https://bad-api-assignment.reaktor.com/v2/"
 func NewService() *Service {
 	return &Service{
-		c:       &http.Client{},
+		c:       &http.Client{Timeout: 30 * time.Second},
 		baseURL: "https://bad-api-assignment.reaktor.com/v2/",
 	}
+}
+
+// URL sets a baseURL a badapi service
+func (s *Service) URL(urls string) *Service {
+	s.baseURL = urls
+	return s
 }
 
 // Do executes a http request and returns the response or an error. Exactly one
@@ -34,7 +40,7 @@ func (s *Service) Do(req *http.Request) (*http.Response, error) {
 		return nil, err
 	}
 	if res.Header.Get("X-Error-Modes-Active") != "" {
-		return nil, xerrors.New("badapi: failed to write data to response")
+		return nil, ErrModeActive
 	}
 	return res, nil
 }
