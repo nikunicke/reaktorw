@@ -8,21 +8,25 @@ import (
 	"github.com/nikunicke/reaktorw/warehouse/inventory"
 )
 
+// Warehouse gives access to the warehouse
 type Warehouse interface {
 	UpsertProduct(product *inventory.Product) error
 	UpsertAvailability(availability *inventory.Availability) error
 }
 
+// Config for the updater
 type Config struct {
 	Warehouse Warehouse
 	Workers   int
 }
 
+// Updater represents updater pipeline
 type Updater struct {
 	pp *pipeline.Pipeline
 	ap *pipeline.Pipeline
 }
 
+// NewUpdater initiates a new warehouse updater pipeline
 func NewUpdater(conf Config) *Updater {
 	return &Updater{
 		pp: assembleProductsUpdaterPipeline(conf),
@@ -49,6 +53,7 @@ func assembleAvailabilitiesUpdaterPipeline(conf Config) *pipeline.Pipeline {
 	)
 }
 
+// Update feeds the warehouse with product- and availability data. Should maybe purge old data as well ...
 func (u *Updater) Update(ctx context.Context, productIt badapi.ProductIterator, availabilityIt badapi.AvailabilityIterator) (int, int, error) {
 	productSink := new(countingSink)
 	availabilitySink := new(countingSink)

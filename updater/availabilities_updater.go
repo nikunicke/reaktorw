@@ -25,7 +25,6 @@ func (u *availabilityUpdater) Process(ctx context.Context, p pipeline.Payload) (
 	}
 	if err := u.updater.UpsertAvailability(availability); err != nil {
 		if err == inventory.ErrAvailabilityForUnknownProduct {
-			// fmt.Println("Unknown prod ID")
 			return nil, nil
 		}
 		return nil, err
