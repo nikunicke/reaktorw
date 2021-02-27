@@ -7,14 +7,14 @@ Here is my implementation for the *Reaktor Junior 2021 Summer* pre-assignment. L
 Read more about the assignment [**here**](https://www.reaktor.com/junior-dev-assignment/) *(27.2.2021)*
 
 
-> :warning: **DISCLAIMER: This is not a simple solution to the assignment**. As this is my second iteration of the same project, I wanted to improve on what I had previously implemented and learn more about a few concepts that I recently became familiar with. Those would be *SOLID development principles, data-processing pipelines, service runners and asynchronous programming*. This being an assignment about a warehouse I think those concepts fit really well. *(27.2.2021)*
+> :warning: **DISCLAIMER: This is not a simple solution to the assignment**. As this is my second iteration of the same project, I wanted to improve on what I had previously implemented and learn more about a few concepts that I recently became familiar with. Those would be *SOLID development principles, data-processing pipelines, service runners and asynchronous programming*. This being an assignment about abstracting data to an interpretable format for warehouse workers, I think those concepts fit really well. *(27.2.2021)*
 
 ---
 
 *built with go1.15.8*
 
 Based on the requirements of the assignment, this application should provide the following services:
-*   A periodically running warehouse updater for keeping products and their availability status up to date by retrieving data from the provided API ([badapi](http://bad-api-assignment.reaktor.com/)), processing it and eventually store it in the data warehouse.
+*   A periodically running warehouse updater for keeping products and their availability status up to date by retrieving data from the provided API ([badapi](http://bad-api-assignment.reaktor.com/)), processing it and eventually storing it in the data warehouse.
 *   A frontend for the end users to view products and their respective availability status.
 
 The services are integreted into one application by using a service runner, where each service is executed independently. The service runner keeps track of each service and exits gracefully if an error were to occur. 
