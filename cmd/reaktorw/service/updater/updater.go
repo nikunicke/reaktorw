@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/go-multierror"
 	"github.com/juju/clock"
 	"github.com/nikunicke/reaktorw/badapi"
-	"github.com/nikunicke/reaktorw/updater"
+	updater_pipeline "github.com/nikunicke/reaktorw/updater"
 	"github.com/nikunicke/reaktorw/warehouse/inventory"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/xerrors"
@@ -50,7 +50,7 @@ func (c *Config) validate() error {
 type Service struct {
 	conf    Config
 	api     *badapi.Service
-	updater *updater.Updater
+	updater *updater_pipeline.Updater
 }
 
 func NewService(conf Config) (*Service, error) {
@@ -59,7 +59,7 @@ func NewService(conf Config) (*Service, error) {
 	}
 	return &Service{
 		api: badapi.NewService(),
-		updater: updater.NewUpdater(updater.Config{
+		updater: updater_pipeline.NewUpdater(updater_pipeline.Config{
 			Warehouse: conf.WarehouseAPI,
 			Workers:   runtime.NumCPU(),
 		}),
