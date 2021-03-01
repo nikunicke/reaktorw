@@ -1,4 +1,4 @@
-// package inventorytest
+package inventorytest
 
 // import (
 // 	"fmt"
