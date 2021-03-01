@@ -1,6 +1,6 @@
 # reaktor warehouse v2
 
-Here is my implementation for the *Reaktor Junior 2021 Summer* pre-assignment. Live version running on [**Heroku**](https://guarded-cliffs-12756.herokuapp.com/)
+Here is my implementation for the *Reaktor Junior 2021 Summer* pre-assignment. Live version running on [**Heroku**](https://guarded-cliffs-12756.herokuapp.com/). If the dyno has been a sleep, it will take about 15 seconds until data is available.
 
 > *Your client is a clothing brand that is looking for a simple web app to use in their warehouses. To do their work efficiently, the warehouse workers need a fast and simple listing page per product category, where they can check simple product and availability information from a single UI.*
 
@@ -14,14 +14,14 @@ Read more about the assignment [**here**](https://www.reaktor.com/junior-dev-ass
 *built with go1.15.8*
 
 Based on the requirements of the assignment, this application should provide the following services:
-*   A periodically running warehouse updater for keeping products and their availability status up to date by retrieving data from the provided API ([badapi](http://bad-api-assignment.reaktor.com/)), processing it and eventually storing it in the data warehouse.
+*   A periodically running warehouse updater for keeping products and their availability status up to date by retrieving data from the provided API ([badapi](http://bad-api-assignment.reaktor.com/)), processing it and eventually storing it in the data warehouse. All requests to the API is executed in an asynchronous manner and for each manufacturer, multiple requests are sent to keep update times consistent.
 *   A frontend for the end users to view products and their respective availability status.
 
-The services are integreted into one application by using a service runner, where each service is executed independently. The service runner keeps track of each service and exits gracefully if an error were to occur. 
+The services are integreted into one application using a service runner, where each service is executed independently. The service runner keeps track of each service and exits gracefully if an error were to occur. 
 
 The application is supported by the folloing packages:
 * ### **Warehouse**
-    *   Defines an inventory interface and can be implemented to support any DB management system. This project includes an implementation for a thread-safe in-memory store that allows only one read-write operation at a time but allows as many read-only transactions as you want at a time. As locks are quite slow, this causes some bottlenecks during a warehouse update, as products and availability data is inserted in bulk.
+    *   Defines an inventory interface and can be implemented to support any DB management system. This project includes an implementation for a thread-safe in-memory store that allows only one read-write operation at a time but allows as many read-only transactions as you want at a time. Locks being quite slow, might cause bottlenecks during a warehouse update, as products and availability data is inserted in bulk. 
 * ### **Pipeline**
     *   An asynchronous data-processing pipeline including two payload dispatch strategy types:
         *   FIFO: *First In, First Out*. The processor takes a payload, processes it and sends it to the next stage in an orderly manner.
