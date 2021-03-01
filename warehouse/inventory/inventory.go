@@ -18,23 +18,23 @@ type Inventory interface {
 }
 
 type Product struct {
-	ID           uuid.UUID
-	APIID        string
-	Name         string
-	Category     string
-	Price        int32
-	Colors       []string
-	Manufacturer string
-
-	RetrievedAt time.Time
+	ID           uuid.UUID `json:"id"`
+	APIID        string    `json:"api_id"`
+	Name         string    `json:"name"`
+	Category     string    `json:"category"`
+	Price        int32     `json:"price"`
+	Colors       []string  `json:"colors"`
+	Manufacturer string    `json:"manufacturer"`
+	Availability string    `json:"availability"`
+	RetrievedAt  time.Time `json:"retrieved_at"`
 }
 
 type Availability struct {
-	ID           uuid.UUID
-	ProductID    uuid.UUID
-	APIID        string
-	Status       string
-	Manufacturer string
+	ID           uuid.UUID `json:"id"`
+	ProductID    uuid.UUID `json:"product_id"`
+	APIID        string    `json:"api_id"`
+	Status       string    `json:"status"`
+	Manufacturer string    `json:"manufacturer"`
 
 	UpdatedAt time.Time
 }

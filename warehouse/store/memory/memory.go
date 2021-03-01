@@ -122,6 +122,7 @@ func (s *InMemoryWarehouse) UpsertAvailability(availability *inventory.Availabil
 	if product == nil {
 		return inventory.ErrAvailabilityForUnknownProduct
 	}
+	product.Availability = availability.Status
 	availability.ProductID = product.ID
 	availability.Manufacturer = product.Manufacturer
 	if existing := s.availabilityAPIIndex[availability.APIID]; existing != nil {
