@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -12,6 +11,7 @@ import (
 	"time"
 
 	"github.com/nikunicke/reaktorw/cmd/reaktorw/service"
+	"github.com/nikunicke/reaktorw/cmd/reaktorw/service/frontend"
 	"github.com/nikunicke/reaktorw/cmd/reaktorw/service/updater"
 	"github.com/nikunicke/reaktorw/warehouse/store/memory"
 	"github.com/sirupsen/logrus"
@@ -20,7 +20,7 @@ import (
 var cpuProfile = flag.String("cpuprofile", "", "write cpu profile to file")
 
 func main() {
-
+	// cpu profiling
 	flag.Parse()
 	if *cpuProfile != "" {
 		f, err := os.Create(*cpuProfile)
@@ -31,25 +31,23 @@ func main() {
 		defer pprof.StopCPUProfile()
 	}
 
-	// serviceRunner
-	var serviceGroup service.Group
-	var updaterConf updater.Config
-	rootLogger := logrus.New()
-	logger := rootLogger.WithFields(logrus.Fields{
-		"app": "reaktor-warehouse",
-	})
-	logger.WithField("start_time", time.Now().Truncate(time.Second).String()).
-		Info("starting reaktor-warehouse")
-	warehouse := memory.NewInMemoryWarehouse()
-	updaterConf.WarehouseAPI = warehouse
-	updaterConf.UpdateInterval = 3 * time.Minute
-	updaterConf.Logger = logger.WithField("service", "warehouse-updater")
-	if s, err := updater.NewService(updaterConf); err == nil {
-		serviceGroup = append(serviceGroup, s)
-	} else {
-		log.Fatal(err)
+	mainlogger := logrus.New()
+	logger := mainlogger.WithField("app", "reaktor-warehouse")
+	if err := runApp(logger); err != nil {
+		logrus.WithFields(logrus.Fields{
+			"error":     err,
+			"exit_time": time.Now().String(),
+		}).Error("Exiting due to error")
 	}
 
+	logger.WithField("exit_time", time.Now().Truncate(time.Second).String()).Info("stopping reaktor-warehouse")
+}
+
+func runApp(logger *logrus.Entry) error {
+	serviceGroup, err := setupServices(logger)
+	if err != nil {
+		return err
+	}
 	ctx, cancelFn := context.WithCancel(context.Background())
 	defer cancelFn()
 	go func() {
@@ -62,8 +60,42 @@ func main() {
 		case <-ctx.Done():
 		}
 	}()
-	if err := serviceGroup.Run(ctx); err != nil {
-		fmt.Println(err)
+	logger.WithField("start_time", time.Now().String()).Info("starting app")
+	return serviceGroup.Run(ctx)
+}
+
+func setupServices(logger *logrus.Entry) (service.Group, error) {
+	var (
+		updaterConf  updater.Config
+		frontendConf frontend.Config
+
+		serviceGroup service.Group
+	)
+
+	// warehouse
+	warehouse := memory.NewInMemoryWarehouse()
+
+	// updater
+	updaterConf.WarehouseAPI = warehouse
+	updaterConf.UpdateInterval = 5 * time.Minute
+	updaterConf.Logger = logger.WithField("service", "warehouse-updater")
+	if service, err := updater.NewService(updaterConf); err == nil {
+		serviceGroup = append(serviceGroup, service)
+	} else {
+		return nil, err
 	}
-	logger.WithField("end_time", time.Now().Truncate(time.Second).String()).Info("stopping reaktor-warehouse")
+	// frontend
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "5000"
+	}
+	frontendConf.WarehouseAPI = warehouse
+	frontendConf.ListenAddr = ":" + port
+	frontendConf.Logger = logger.WithField("service", "frontend")
+	if service, err := frontend.NewService(frontendConf); err == nil {
+		serviceGroup = append(serviceGroup, service)
+	} else {
+		return nil, err
+	}
+	return serviceGroup, nil
 }
