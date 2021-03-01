@@ -85,13 +85,12 @@ func sourceWorker(ctx context.Context, source Source, outCh chan<- Payload, errC
 		payload := source.Payload()
 		select {
 		case outCh <- payload:
-			// fmt.Println("payload sent")
 		case <-ctx.Done():
 			return
 		}
 	}
 	if err := source.Error(); err != nil {
-		newErr := xerrors.Errorf("pipeline: source: %w", err)
+		newErr := xerrors.New("source error")
 		maybeEmitError(newErr, errCh)
 	}
 }
@@ -102,17 +101,14 @@ func sinkWorker(ctx context.Context, sink Sink, inCh <-chan Payload, errCh chan<
 		case <-ctx.Done():
 			return
 		case payload, ok := <-inCh:
-			// fmt.Println("sink got payload")
 			if !ok {
-				// fmt.Println("sink payload not ok")
 				return
 			}
 			if err := sink.Consume(ctx, payload); err != nil {
-				newErr := xerrors.Errorf("pipeline: sink: %w", err)
+				newErr := xerrors.New("sink error")
 				maybeEmitError(newErr, errCh)
 				return
 			}
-			// fmt.Println("MAP in sink")
 			payload.MarkAsProcessed()
 		}
 	}

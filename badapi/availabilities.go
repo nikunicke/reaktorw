@@ -104,5 +104,5 @@ func (c *AvailabilitiesGetCall) executeRequest(req *http.Request) (*http.Respons
 			return res, nil
 		}
 	}
-	return nil, xerrors.Errorf("All attempts to request availabilities failed: %w", allErr)
+	return nil, xerrors.New("All attempts to request availabilities failed")
 }

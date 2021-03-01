@@ -33,13 +33,13 @@ type Config struct {
 func (c *Config) validate() error {
 	var err error
 	if c.WarehouseAPI == nil {
-		err = multierror.Append(err, xerrors.Errorf("warehouse API not provided"))
+		err = multierror.Append(err, xerrors.New("warehouse API not provided"))
 	}
 	if c.Clock == nil {
 		c.Clock = clock.WallClock
 	}
 	if c.UpdateInterval <= 0 {
-		err = multierror.Append(err, xerrors.Errorf("invalid update interval"))
+		err = multierror.Append(err, xerrors.New("invalid update interval"))
 	}
 	if c.Logger == nil {
 		c.Logger = logrus.NewEntry(&logrus.Logger{Out: ioutil.Discard})
@@ -55,7 +55,7 @@ type Service struct {
 
 func NewService(conf Config) (*Service, error) {
 	if err := conf.validate(); err != nil {
-		return nil, xerrors.Errorf("warehouse-updater service: config validation failed: %w", err)
+		return nil, xerrors.New("warehouse-updater service: config validation failed")
 	}
 	return &Service{
 		api: badapi.NewService(),

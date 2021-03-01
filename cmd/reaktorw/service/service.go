@@ -32,7 +32,7 @@ func (g Group) Run(ctx context.Context) error {
 		go func(s Service) {
 			defer wg.Done()
 			if err := s.Run(runCtx); err != nil {
-				errCh <- xerrors.Errorf("%s: %w", s.Name(), err)
+				errCh <- xerrors.New("service fail")
 				cancelFn()
 			}
 		}(service)
