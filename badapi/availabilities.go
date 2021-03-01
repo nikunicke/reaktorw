@@ -3,10 +3,10 @@ package badapi
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 
-	"github.com/hashicorp/go-multierror"
 	"golang.org/x/xerrors"
 )
 
@@ -98,11 +98,13 @@ func (c *AvailabilitiesGetCall) executeRequest(req *http.Request) (*http.Respons
 	for i := 0; i < attempts; i++ {
 		select {
 		case err := <-errCh:
-			allErr = multierror.Append(allErr, err)
+			// allErr = multierror.Append(allErr, err)
+			allErr = err
 		case res := <-resCh:
 			cancelFn()
 			return res, nil
 		}
 	}
+	fmt.Println(allErr)
 	return nil, xerrors.New("All attempts to request availabilities failed")
 }

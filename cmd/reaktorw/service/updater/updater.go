@@ -7,7 +7,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/hashicorp/go-multierror"
 	"github.com/juju/clock"
 	"github.com/nikunicke/reaktorw/badapi"
 	updater_pipeline "github.com/nikunicke/reaktorw/updater"
@@ -33,13 +32,15 @@ type Config struct {
 func (c *Config) validate() error {
 	var err error
 	if c.WarehouseAPI == nil {
-		err = multierror.Append(err, xerrors.New("warehouse API not provided"))
+		// err = multierror.Append(err, xerrors.New("warehouse API not provided"))
+		err = xerrors.New("Warehouse API not provided")
 	}
 	if c.Clock == nil {
 		c.Clock = clock.WallClock
 	}
 	if c.UpdateInterval <= 0 {
-		err = multierror.Append(err, xerrors.New("invalid update interval"))
+		// err = multierror.Append(err, xerrors.New("invalid update interval"))
+		err = xerrors.New("invalid update interval")
 	}
 	if c.Logger == nil {
 		c.Logger = logrus.NewEntry(&logrus.Logger{Out: ioutil.Discard})
@@ -151,7 +152,8 @@ func (s *Service) loadProducts(ctgs ...string) (badapi.ProductIterator, error) {
 	var err error
 	close(errCh)
 	for errIn := range errCh {
-		err = multierror.Append(err, errIn)
+		// err = multierror.Append(err, errIn)
+		err = errIn
 	}
 	return &ProductIterator{products: products}, err
 }
@@ -178,7 +180,8 @@ func (s *Service) loadAvailabilities(manufacturers ...string) (badapi.Availabili
 	close(errCh)
 	for errIn := range errCh {
 		if errIn != badapi.ErrModeActive && errIn != badapi.ErrEmptyBody {
-			err = multierror.Append(err, errIn)
+			// err = multierror.Append(err, errIn)
+			err = errIn
 		}
 	}
 	var clean [][]*badapi.Response

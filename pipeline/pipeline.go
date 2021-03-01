@@ -4,7 +4,6 @@ import (
 	"context"
 	"sync"
 
-	"github.com/hashicorp/go-multierror"
 	"golang.org/x/xerrors"
 )
 
@@ -72,8 +71,10 @@ func (p *Pipeline) Process(ctx context.Context, source Source, sink Sink) error 
 	}()
 
 	var errAll error
+
 	for err := range errCh {
-		errAll = multierror.Append(errAll, err)
+		// errAll = multierror.Append(errAll, err)
+		errAll = err
 		cancelFn()
 	}
 	return errAll

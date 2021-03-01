@@ -4,7 +4,6 @@ import (
 	"context"
 	"sync"
 
-	"github.com/hashicorp/go-multierror"
 	"golang.org/x/xerrors"
 )
 
@@ -43,7 +42,8 @@ func (g Group) Run(ctx context.Context) error {
 	var err error
 	close(errCh)
 	for serviceErr := range errCh {
-		err = multierror.Append(err, serviceErr)
+		// err = multierror.Append(err, serviceErr)
+		err = serviceErr
 	}
 	return err
 }
