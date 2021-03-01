@@ -1,1 +1,1 @@
-web: reaktor-warehouse
+web: bin/reaktorw
